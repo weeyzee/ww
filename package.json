@@ -2,10 +2,9 @@
   "name": "nodejs",
   "version": "1.0.0",
   "description": "forlesson",
-  "main": "index.js",
+  "main": "Main.js",
   "scripts": {
     "start": "node Main.js",
-    "lesson2": "node Lesson2.js"
   },
   "author": "",
   "license": "ISC",
