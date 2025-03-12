@@ -2,7 +2,7 @@
   "name": "nodejs",
   "version": "1.0.0",
   "description": "forlesson",
-  "main": "Main.js",
+  "main": "index.js",
   "scripts": {
     "start": "node Main.js",
   },
