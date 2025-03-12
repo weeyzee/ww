@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">💬 Чат</div>
+        <div id="messages" class="chat-messages"></div>
+        <div class="chat-input">
+            <input id="messageInput" type="text" placeholder="Введите сообщение..." autocomplete="off">
+            <button onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+    <script>
+        // Создаем соединение с сервером через Socket.io
+        const socket = io();
+
+        // Получаем ссылку на контейнер с сообщениями (для добавления новых сообщений)
+        const messages = document.getElementById('messages');
+
+        // Получаем ссылку на поле ввода (куда пользователь вводит текст)
+        const input = document.getElementById('messageInput');
+
+        // Когда сервер отправляет событие 'chat message', обрабатываем его
+        socket.on('chat message', (msg) => {
+            // Создаем новый элемент div для отображения сообщения
+            const div = document.createElement('div');
+            // Добавляем классы для стилизации (например, зададим стиль для сообщения)
+            div.classList.add('message');
+            // Вставляем текст сообщения в элемент
+            div.textContent = msg;
+            // Добавляем новый div с сообщением в контейнер сообщений
+            messages.appendChild(div);
+            // Прокручиваем контейнер сообщений вниз, чтобы увидеть последнее сообщение
+            messages.scrollTop = messages.scrollHeight;
+        });
+
+        // Функция для отправки сообщения на сервер
+        function sendMessage() {
+            // Получаем текст из поля ввода и удаляем лишние пробелы
+            const msg = input.value.trim();
+            // Проверяем, что текст не пустой
+            if (msg) {
+                // Отправляем сообщение на сервер с событием 'chat message'
+                socket.emit('chat message', msg);
+                // Очищаем поле ввода после отправки сообщения
+                input.value = '';
+            }
+        }
+
+        // Добавляем слушатель события нажатия клавиши 'Enter' для отправки сообщения
+        input.addEventListener('keypress', (e) => {
+            // Если нажата клавиша Enter, вызываем sendMessage()
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

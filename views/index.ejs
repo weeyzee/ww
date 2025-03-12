@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная страница</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <%- include('blocks/header') -%>
+    <main>
+        <h2>Добро пожаловать на главную страницу!</h2>
+        <p>Здесь будет основной контент, доступный для всех пользователей.</p>
+
+        <div>
+            <% if (user) { %>
+                <p>Вы вошли как <%= user %></p>
+                <% if (role === 'admin') { %>
+                    <!-- Кнопка для администратора -->
+                    <a href="/admusers" class="admin-link">Перейти к пользователям</a>
+                <% } %>
+                <!-- Форма для получения письма -->
+                <form action="/send-email" method="POST">
+                    <button type="submit">Получить письмо с именем на сайте</button>
+                </form>
+                <a href="/logout" class="logout-link">Выйти</a>
+            <% } else { %>
+                <!-- Если пользователь не вошел -->
+                <a href="/login" class="login-link">Войти</a> | <a href="/register" class="register-link">Регистрация</a>
+            <% } %>
+        </div>
+        <iframe frameborder="0" allow="clipboard-write" style="border:none;width:614px;height:244px;" width="614" height="244" src="https://music.yandex.ru/iframe/album/35134047/track/135523680">Слушайте <a href="https://music.yandex.ru/album/35134047/track/135523680">Несётся движ</a> — <a href="https://music.yandex.ru/artist/1536005">Восточный округ</a> на Яндекс Музыке</iframe>
+
+        <footer>
+            <p>&copy; 2025 Ваш сайт. Все права защищены.</p>
+        </footer>
+    </main>
+    
+<!-- Контейнер для чата -->
+<div id="chat-widget">
+    <!-- Кнопка для открытия/закрытия чата -->
+    <div class="chat-button" onclick="toggleChat()">
+        💬
+    </div>
+    
+    <!-- Само окно чата, изначально скрытое -->
+    <div id="chat-box" class="hidden">
+        <!-- Заголовок чата, который тоже можно нажать для сворачивания -->
+        <div class="chat-header" onclick="toggleChat()">Чат</div>
+
+        <!-- Блок для отображения сообщений -->
+        <div id="messages" class="chat-messages"></div>
+
+        <!-- Поле ввода сообщения + кнопка отправки -->
+        <div class="chat-input">
+            <input id="messageInput" type="text" placeholder="Введите сообщение..." autocomplete="off">
+            <button onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+</div>
+
+<!-- Подключение Socket.io для работы с WebSocket -->
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    // Создаём соединение с сервером через WebSocket
+    const socket = io();
+
+    // Получаем ссылки на HTML-элементы
+    const messages = document.getElementById('messages'); // Контейнер с сообщениями
+    const input = document.getElementById('messageInput'); // Поле ввода текста
+    const chatBox = document.getElementById('chat-box'); // Само окно чата
+
+    // Получаем сообщение от сервера
+    socket.on('chat message', (msg) => {
+        // Создаём новый элемент для сообщения
+        const div = document.createElement('div');
+        div.classList.add('message'); // Добавляем CSS-класс для стилизации
+
+        // Создаём элемент для имени пользователя
+        const usernameDiv = document.createElement('span');
+        usernameDiv.classList.add('username'); // CSS-класс
+        usernameDiv.textContent = msg.username; // Записываем имя пользователя
+        div.appendChild(usernameDiv); // Добавляем в контейнер сообщения
+
+        // Создаём элемент для текста сообщения
+        const messageDiv = document.createElement('span');
+        messageDiv.classList.add('message-text'); // CSS-класс
+        messageDiv.textContent = ': ' + msg.text; // Сам текст сообщения
+        div.appendChild(messageDiv); // Добавляем в контейнер сообщения
+
+        // Добавляем сообщение в чат
+        messages.appendChild(div);
+
+        // Прокручиваем чат вниз, чтобы было видно последнее сообщение
+        messages.scrollTop = messages.scrollHeight;
+    });
+
+    // Функция отправки сообщения
+    function sendMessage() {
+        const msg = input.value.trim(); // Убираем лишние пробелы
+        if (msg) { // Проверяем, что строка не пустая
+            socket.emit('chat message', msg); // Отправляем сообщение на сервер
+            input.value = ''; // Очищаем поле ввода
+        }
+    }
+
+    // Обрабатываем нажатие клавиши Enter для отправки сообщения
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // Функция для сворачивания и разворачивания чата
+    function toggleChat() {
+        chatBox.classList.toggle('hidden'); // Добавляет/убирает класс "hidden"
+    }
+</script>
+</body>
+</html>
